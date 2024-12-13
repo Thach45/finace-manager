@@ -18,7 +18,7 @@ def login():
         response.set_cookie("token", auth["token"])
         response.set_cookie("user_id", str(auth["_id"]))
         return response
-    return render_template('auth.html', error="Số điện thoại hoặc mật khẩu không đúng")
+    return render_template('auth.html', error=1)
 
 def register():
     return render_template('register.html')
@@ -30,7 +30,7 @@ def register_post():
     data["password"] = str(hashlib.sha256(data["password"].encode()).hexdigest())
     existing_auth = UserModel().get_auth({"phone": data["phone"]})
     if existing_auth:
-        return render_template("register.html", error="Số điện thoại đã tồn tại")
+        return render_template("register.html", error="Số điện thoại đã tồn tại vui lòng chọn số khác")
     auth_model = UserModel()
     auth_model.create_auth(data)
     return redirect(url_for("auth.auth_route"))

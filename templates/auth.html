@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập</title>
-    <link rel="stylesheet" href="styles.css">
 </head>
 <style>
     * {
@@ -119,6 +118,17 @@
     .extra-options a:hover {
         text-decoration: underline;
     }
+
+    .text-info {
+        color: red;
+        font-size: 12px;
+        display: block;
+        font-weight: 400;
+        margin-top: 5px;
+        animation: fadeIn 0.3s;
+    }
+
+
     
     @media (max-width: 480px) {
         .container {
@@ -135,10 +145,17 @@
             <div class="input-group">
                 <input type="tel" id="phone" name="phone" required>
                 <label for="phone">Số điện thoại</label>
+                {%if error %}
+                     <span class="text-info">Số điện thoại hoặc tài khoản không đúng</span>
+                {%endif%}
+                
             </div>
             <div class="input-group">
                 <input type="password" id="password" name="password" required>
                 <label for="password">Mật khẩu</label>
+                {%if error %}
+                     <span class="text-info">Số điện thoại hoặc tài khoản không đúng</span>
+                {%endif%}
             </div>
             <button type="submit">Đăng nhập</button>
             <div class="extra-options">
@@ -148,5 +165,6 @@
         </form>
     </div>
 </body>
+
 </html>
 
