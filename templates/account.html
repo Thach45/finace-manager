@@ -1,0 +1,198 @@
+{% extends 'layout.html' %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<main class="main-content">
+    <header class="page-header">
+        <h2>Quản lý Tài khoản</h2>
+        <div class="header-actions flex gap-2">
+            <button class="transfer-btn">
+                <i class="fas fa-exchange-alt"></i>
+                Chuyển khoản
+            </button>
+            <button class="add-account-btn">
+                <i class="fas fa-plus"></i>
+                Thêm tài khoản mới
+            </button>
+        </div>
+    </header>
+
+    <!-- Account Summary -->
+    <section class="account-summary">
+        <div class="summary-card total">
+            <h3>Tổng số dư</h3>
+            <p class="amount total-balance">{{"{:,.0f}".format(total_balance)}} ₫</p>
+        </div>
+        <div class="summary-card bank">
+            <h3>Tài khoản ngân hàng</h3>
+            <p class="amount total-bank-balance">
+                {{ "{:,.0f}".format(bank_accounts|sum(attribute="balance")) }} ₫
+            </p>
+            <span>{{ bank_accounts|length }} tài khoản</span>
+        </div>
+        <div class="summary-card ewallet">
+            <h3>Ví điện tử</h3>
+            <p class="amount total-ewallet-balance">
+                {{ "{:,.0f}".format(ewallet_accounts|sum(attribute="balance")) }} ₫
+            </p>
+            <span>{{ ewallet_accounts|length }} ví</span>
+        </div>
+        <div class="summary-card cash">
+            <h3>Tiền mặt</h3>
+            {% set total_cash_balance = 0 %}
+            <p class="amount total-cash-balance">{{ "{:,.0f}".format(cash_accounts|sum(attribute="balance")) }} ₫</p>
+            <span>{{ cash_accounts|length }} ví</span>
+        </div>
+    </section>
+
+    <!-- Account List -->
+    <section class="account-list">
+        <div class="list-header">
+            <h3>Danh sách tài khoản</h3>
+            <div class="list-filters">
+                <select class="filter-select" id="filter-select">
+                    <option value="">Tài khoản</option>
+                    <option value="">Tất cả tài khoản</option>
+                    <option value="bank">Tài khoản ngân hàng</option>
+                    <option value="ewallet">Ví điện tử</option>
+                    <option value="cash">Tiền mặt</option>
+                </select>
+            </div>
+        </div>
+        <div class="account-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên tài khoản</th>
+                        <th>Loại</th>
+                        <th>Số dư</th>
+                        <th>Cập nhật lần cuối</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in accounts %}
+                    <tr>
+                        <td>
+                            {% if account.type == "bank" %}
+                            <div class="account-info">
+                                <i class="fas fa-university"></i>
+                                <span>{{account.name}}</span>
+                            </div>
+                            {% elif account.type == "ewallet" %}
+                            <div class="account-info">
+                                <i class="fas fa-wallet"></i>
+                                <span>{{account.name}}</span>
+                            </div>
+                            {% elif account.type == "cash" %}
+                            <div class="account-info">
+                                <i class="fas fa-money-bill"></i>
+                                <span>{{account.name}}</span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        {% if account.type == "bank" %}
+                        <td>Tài khoản ngân hàng</td>
+                        {% elif account.type == "ewallet" %}
+                        <td>Ví điện tử</td>
+                        {% elif account.type == "cash" %}
+                        <td>Tiền mặt</td>
+                        {% endif %}
+                        <td class="amount">{{"{:,.0f}".format(account.balance)}} ₫</td>
+                        <td>{{account.createTime}}</td>
+                        <td class="actions">
+                            <form action="/account/edit/{{account._id}}">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                            </form>
+                            <form action="/account/delete/{{account._id}}" method="POST"  style="display:inline;">
+                                <button type="submit" class="delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Add Account Modal -->
+    <div class="add-account-modal" id="addAccountModal">
+        <div class="modal-content">
+            <div class="modal-header font-bold">
+                <h3>Thêm tài khoản mới</h3>
+                <button class="close-btn close-add-account-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="account-form" action="/account/add/" method="post">
+                <div class="form-group">
+                    <label>Tên tài khoản</label>
+                    <input type="text" required placeholder="Nhập tên tài khoản" name="name">
+                </div>
+                <div class="form-group">
+                    <label>Loại tài khoản</label>
+                    <select required name="type">
+                        <option value="">Chọn loại tài khoản</option>
+                        <option value="bank">Tài khoản ngân hàng</option>
+                        <option value="ewallet">Ví điện tử</option>
+                        <option value="cash">Tiền mặt</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số dư ban đầu</label>
+                    <input type="number" min=0 required placeholder="Nhập số dư ban đầu" name="balance">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn cancel-add-btn">Hủy</button>
+                    <button type="submit" class="submit-btn submit-add-btn">Thêm tài khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Transfer Money Modal -->
+    <div class="add-transfer-modal" id="transferModal">
+        <div class="modal-content">
+            <div class="modal-header font-bold">
+                <h3>Chuyển khoản</h3>
+                <button class="close-btn close-transfer-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="transfer-form" action="/account/transfer" method="post">
+                <div class="form-group">
+                    <label>Tài khoản nguồn</label>
+                    <select id="sourceAccount" required name="sourceAccount" onchange="MaxAmount(); validateAccounts();">
+                        <option value="">Chọn tài khoản nguồn</option>
+                        {% for account in accounts %}
+                            <option value="{{ account._id }}" source-balance="{{ account.balance }}">{{ account.name }} - {{"{:,.0f}".format(account.balance) }} ₫</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tài khoản đích</label>
+                    <select id="targetAccount" required name="targetAccount" onchange="validateAccounts();">
+                        <option value="">Chọn tài khoản đích</option>
+                        {% for account in accounts %}
+                            <option value="{{ account._id }}">{{ account.name }} - {{ "{:,.0f}".format(account.balance) }} ₫</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền chuyển</label>
+                    <input type="number" required name="amount" id="amount" placeholder="Nhập số tiền cần chuyển" min="1" step="1">
+                </div>
+                <div id="error-message" class="alert alert-danger" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>
+                        Tài khoản nguồn và tài khoản đích không được giống nhau!<br>
+                    </span>
+                </div>  
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn cancel-transfer-btn">Hủy</button>
+                    <button type="submit" class="submit-btn submit-transfer-btn">Xác nhận chuyển khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+<script src="{{ url_for('static', filename='js/account.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="report-wrapper">
+  <!-- Phần Header -->
+  <header class="report-header">
+    <div class="header-left">
+      <h1>Báo Cáo Tài Chính</h1>
+      <p class="subtitle">Tổng quan hiệu quả tài chính của bạn</p>
+    </div>
+    <div class="header-right">
+      <a href="/report/download" class="btn-export">
+        <i class="fas fa-download"></i>
+        Xuất Báo Cáo
+      </a>
+    </div>
+  </header>
+
+  <!-- Các thẻ chỉ số KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="kpi-content">
+        <h3>Tổng Doanh Thu</h3>
+        <p class="kpi-value">{{"{:,.0f}".format(total_income)}}đ</p>
+        </span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon">
+        <i class="fas fa-wallet"></i>
+      </div>
+      <div class="kpi-content">
+        <h3>Chi Phí</h3>
+        <p class="kpi-value">{{"{:,.0f}".format(total_expense)}}</p>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phần Biểu Đồ -->
+  <div class="chart-section">
+    <div class="chart-container main-chart">
+      <div class="chart-header">
+        <h2>Phân Tích Doanh Thu</h2>
+      </div>
+      <canvas id="revenueChart"></canvas>
+    </div>
+  </div>
+</div>
+<script>
+  // Lấy dữ liệu doanh thu từ Flask (sử dụng Jinja2 để nhúng vào JavaScript)
+  const monthlyRevenue = {{ monthly_revenue | tojson }};
+
+  // Vẽ biểu đồ với Chart.js
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  const revenueChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(monthlyRevenue),  // Tháng
+      datasets: [{
+        label: 'Revenue',
+        data: Object.values(monthlyRevenue),  // Doanh thu
+        backgroundColor: 'rgba(135, 206, 235, 0.6)',
+        borderColor: 'rgba(135, 206, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Monthly Revenue'
+        },
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}
